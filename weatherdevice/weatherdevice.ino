@@ -35,7 +35,7 @@ struct weather_var{
 
 struct weather_var cur_weather;
 
-//loop variables
+// loop variables
 // unsigned long start_mils;
 // unsigned long cur_mils;
 // unsigned long elapsed_mils = 1000;
