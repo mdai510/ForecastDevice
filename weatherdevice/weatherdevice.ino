@@ -29,18 +29,15 @@ struct weather_var{
   float temp; //in Kelvin
   int humidity;
   float wind_speed;
-  String description;
-  String icon;
+  const char* description;
+  const char* icon;
 };
 
 struct weather_var cur_weather;
 
 // loop variables
-// unsigned long start_mils;
-// unsigned long cur_mils;
-// unsigned long elapsed_mils = 1000;
 unsigned long last_call = 0; //millis() of last API call
-unsigned long delay_mils = 30 * 1000; //delay between weather api calls
+unsigned long delay_mils = 1800 * 1000; //delay between weather api calls
 
 void wifi_disconnected() {
   Serial.println("WiFi Disconnected...");
@@ -95,41 +92,33 @@ void get_location(){
   parse_ip_json(location_json);
 }
 
-//gets weather information from weather API
-String weather_api(){
-  String weatherAPIFullCall = weatherAPICall + "" + lat + "&lon=" + lon + "&exclude=minutely,alerts&appid=" + weatherAPIKey;
+//gets weather information from weather API and sets variables accordingly
+int get_weather(){
+  String weatherAPIFullCall = weatherAPICall + "" + lat + "&lon=" + lon + "&units=imperial&exclude=minutely,alerts&appid=" + weatherAPIKey;
+  String weather_json;
 
   HTTPClient http;
   http.begin(weatherAPIFullCall);
   int httpCode = http.GET();
   if(httpCode > 0){
-    String payload = http.getString();
+    weather_json = http.getString();
     Serial.print("Returned Payload: ");
-    Serial.println(payload);
-    return payload;
+    Serial.println(weather_json);
   }
   else{
     Serial.println("Error on HTTP Request.");
-    return "";
+    return 0;
   }
-}
 
-//Parses json information from weather API
-void parse_weather_json(String weather_json){
   JsonDocument doc;
   deserializeJson(doc, weather_json);
   cur_weather.dt = doc["current"]["dt"];
   cur_weather.temp = doc["current"]["temp"];
-}
-
-//calls weather functions
-void get_weather(){
-  String weather_json = weather_api();
-  while(weather_json = ""){
-    weather_json = weather_api();
-  }
-
-  Serial.println(weather_json);
+  cur_weather.humidity = doc["current"]["humidity"];
+  cur_weather.wind_speed = doc["current"]["wind_speed"];
+  cur_weather.description = doc["current"]["weather"]["description"];
+  cur_weather.icon = doc["current"]["weather"]["icon"];
+  return 1;
 }
 
 void setup() {
@@ -163,7 +152,7 @@ void loop() {
     //call weather API
     get_weather();
     last_call = millis();
-    Serial.println(weather_var)
+    Serial.println(cur_weather.temp);
   }
 
   // Serial.println(WiFi.globalIPv6());
