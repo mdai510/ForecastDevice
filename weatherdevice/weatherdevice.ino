@@ -4,8 +4,8 @@
 #include <string.h>
 
 //network information
-const char* ssid = "1987 Toyota Corolla GT-S";
-const char* password = "hanselnina123";
+const char* ssid = "hansel";
+const char* password = "40435lajolla";
 IPAddress ipv6;
 
 //IP API
@@ -35,9 +35,12 @@ struct weather_var{
 
 struct weather_var cur_weather;
 
+struct weather_var hourly_weather[24];
+
 // loop variables
 unsigned long last_call = 0; //millis() of last API call
-unsigned long delay_mils = 1800 * 1000; //delay between weather api calls
+int delay_mins = 60;
+unsigned long delay_mils = delay_mins * 60 * 1000; //delay between weather api calls
 
 void wifi_disconnected() {
   Serial.println("WiFi Disconnected...");
@@ -112,12 +115,25 @@ int get_weather(){
 
   JsonDocument doc;
   deserializeJson(doc, weather_json);
+  //get CURRENT weather
   cur_weather.dt = doc["current"]["dt"];
   cur_weather.temp = doc["current"]["temp"];
   cur_weather.humidity = doc["current"]["humidity"];
   cur_weather.wind_speed = doc["current"]["wind_speed"];
   cur_weather.description = doc["current"]["weather"]["description"];
   cur_weather.icon = doc["current"]["weather"]["icon"];
+
+  //get weather for next few hours
+  JsonArray hrly_data= doc["hourly"];
+
+  for(int i = 0; i < 24; i++){
+    hourly_weather[i].dt = hrly_data[i]["dt"];
+    hourly_weather[i].temp = hrly_data[i]["temp"];
+    hourly_weather[i].humidity = hrly_data[i]["humidity"];
+    hourly_weather[i].wind_speed = hrly_data[i]["wind_speed"];
+    hourly_weather[i].description = hrly_data[i]["weather"]["description"];
+    hourly_weather[i].icon = hrly_data[i]["weather"]["icon"];
+  }
   return 1;
 }
 
@@ -153,6 +169,7 @@ void loop() {
     get_weather();
     last_call = millis();
     Serial.println(cur_weather.temp);
+    Serial.println(hourly_weather[23].temp);
   }
 
   // Serial.println(WiFi.globalIPv6());
