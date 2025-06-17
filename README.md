@@ -4,5 +4,6 @@ Uses WiFi connection to find your approx. location, then call weather API with t
 Planning for current weather, rest of day weather, and next 3-4 days weather
 
 Currently you have to enter the network id/passwork into the code directly. 
-This may change after I add make the LCD screen functional + buttons maybe
+
+Using 240x240 tft screen currently
 
