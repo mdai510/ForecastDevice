@@ -62,7 +62,7 @@ struct weather_var hourly_weather[24];
 // loop variables
 // weather call variables
 unsigned long weather_lastcall = 0; //millis() of last API call
-int delay_mins = 1;
+int delay_mins = 60;
 unsigned long weather_delay_mils = delay_mins * 60 * 1000; //delay between weather api calls
 // display loop variables
 unsigned long prev_millis_disp = 0;
@@ -71,10 +71,6 @@ int num_disp_states = 3;
 bool did_display = false; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//get date and time from NTP Client
-String getDateTimeStr(){
-  return rtc.getTime("%a %Y-%m-%d %H:%M");
-}
 
 void wifi_disconnected() {
   Serial.println("WiFi Disconnected...");
@@ -99,7 +95,8 @@ String ip_location() {
     Serial.print("Returned Payload: ");
     Serial.println(payload);
     return payload;
-  } else {
+  } 
+  else{
     Serial.println("Error on HTTP Request.");
     return "";
   }
@@ -172,6 +169,7 @@ int get_weather(){
   return 1;
 }
 
+//connect to wifi
 void wifiConnect(){
   WiFi.begin(ssid, password);
   Serial.println("Connecting to WiFi...");
@@ -223,8 +221,6 @@ void setup() {
 void loop() {  
   unsigned long cur_millis = millis();
   unsigned long del_interval;
-  // lcd.setCursor(0, 1);
-  // lcd.print(cur_weather.temp);
 
   //add code to check if wifi and ip are connected
 
