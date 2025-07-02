@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <ESP32Time.h>
 
 //for display
 #include "SPI.h"
@@ -20,8 +21,8 @@
 TFT_eSPI tft = TFT_eSPI();
 
 //network information
-const char* ssid = "hansel";
-const char* password = "40435lajolla";
+const char* ssid = "NETGEAR75";
+const char* password = "vastviolin434";
 IPAddress ipv6;
 
 //IP API
@@ -40,10 +41,13 @@ double lon;
 String weatherAPIKey = "ccf6be088f6bb5825ed68cf25da130ce";
 String weatherAPICall = "https://api.openweathermap.org/data/3.0/onecall?lat=";
 
+// time vars
 const char* ntpServer = "pool.ntp.org";
 const long daylightOffset = 0;
-long tmzOffset;
+ESP32Time rtc;
+int tmzOffset;
 
+// weather info struct
 struct weather_var{
   long dt;
   float temp; //in Kelvin
@@ -52,30 +56,24 @@ struct weather_var{
   const char* description;
   const char* icon;
 };
-
 struct weather_var cur_weather;
-
 struct weather_var hourly_weather[24];
 
 // loop variables
-unsigned long last_call = 0; //millis() of last API call
-int delay_mins = 60;
-unsigned long delay_mils = delay_mins * 60 * 1000; //delay between weather api calls
+// weather call variables
+unsigned long weather_lastcall = 0; //millis() of last API call
+int delay_mins = 1;
+unsigned long weather_delay_mils = delay_mins * 60 * 1000; //delay between weather api calls
+// display loop variables
+unsigned long prev_millis_disp = 0;
+int disp_state = 0;
+int num_disp_states = 3;
+bool did_display = false; 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //get date and time from NTP Client
 String getDateTimeStr(){
-  struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)){
-    Serial.println("Failed to obtain time");
-    return "ERROR OBTAINING TIME";
-  }
-  
-  char buf[80];
-
-  // Format time, "ddd yyyy-mm-dd hh:mm:ss zzz"
-  strftime(buf, sizeof(buf), "%a %Y-%m-%d %H:%M", &timeinfo);
-  printf("%s\n", buf);
-  return buf;
+  return rtc.getTime("%a %Y-%m-%d %H:%M");
 }
 
 void wifi_disconnected() {
@@ -174,36 +172,32 @@ int get_weather(){
   return 1;
 }
 
-void setup() {
-  /*
-  lcd.clear();
-  // set up the LCD's number of columns and rows:
-  lcd.begin(16, 2);
-  // Print a message to the LCD.
-  lcd.print("current temp: "); */
+void wifiConnect(){
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to WiFi...");
+  while (WiFi.status() != WL_CONNECTED) {}
+  WiFi.enableIPv6();
+  Serial.println("Connected to WiFi.");
+}
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void setup() {
   //setup tft
   tft.begin();
   tft.setRotation(1);
-
   tft.setTextColor(TFT_GREEN, TFT_BLACK);
   tft.fillScreen(TFT_BLACK);   // Clear screen
   tft.setFreeFont(FF18);       // Select the font
 
+  Serial.begin(115200);
+
   tft.drawString("Starting...", 0, 30, GFXFF);
   delay(1000);
 
-  Serial.begin(115200);
   tft.fillScreen(TFT_BLACK);   // Clear screen
   tft.drawString("Connecting to WiFi...", 0, 30, GFXFF);
   //Connect to WiFi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Connecting to WiFi...");
-    delay(1000);
-  }
-  WiFi.enableIPv6();
-  Serial.println("Connected to WiFi.");
+  wifiConnect();
 
   //get delay until IPv6 is valid (it takes some time)
   tft.fillScreen(TFT_BLACK);   // Clear screen
@@ -215,35 +209,65 @@ void setup() {
 
   get_location();
   get_weather();
-  last_call = millis();
-  Serial.println(cur_weather.temp);
+  weather_lastcall = millis();
 
-  configTime(tmzOffset, daylightOffset, ntpServer);
+  //this is dumb lol
+  ESP32Time rtc1(tmzOffset);
+  rtc = rtc1;
+  rtc.setTime(cur_weather.dt);
+  WiFi.disconnect();
 }
 
-//display weather/location info 
+//continuously display weather/location info 
 //update weather each hour
 void loop() {  
+  unsigned long cur_millis = millis();
+  unsigned long del_interval;
   // lcd.setCursor(0, 1);
   // lcd.print(cur_weather.temp);
 
   //add code to check if wifi and ip are connected
 
-  //if condition fulfilled if time specified in delay_mils has passed
-  //Note: millis() overflow is not an issue because both millis and last_call are unsigned longs
-  if(millis() - last_call >= delay_mils){
+  //runs once every x time specified in weather_delay_mils
+  //note: millis() overflow is not an issue because both millis and weather_lastcall are unsigned longs
+  if(cur_millis - weather_lastcall >= weather_delay_mils){
     //call weather API
+    wifiConnect();
     get_weather();
-    last_call = millis();
-    // Serial.println(cur_weather.temp);
-    // Serial.println(hourly_weather[23].temp);
+    WiFi.disconnect();
+    weather_lastcall = cur_millis;
   }
 
-  tft.fillScreen(TFT_BLACK);   // Clear screen
-  tft.drawString(getDateTimeStr(), 0, 0, GFXFF);
-  tft.drawString("Current Temp: " + (String)cur_weather.temp + "F", 0, 30, GFXFF);
-  tft.drawString((String)cur_weather.description, 0, 60, GFXFF);
-  tft.drawString("Humidity " + (String)cur_weather.humidity + "%", 0, 90, GFXFF);
-  tft.drawString("Wind Speed: " + (String)cur_weather.wind_speed + "m/s", 0, 120, GFXFF);
-  delay(1000);
+  if(!did_display){ //ensures content is only displayed one time per interval to prevent flickering
+    did_display = true; 
+    //switch cases enable cycling between different things to display and different time intervals for each display
+    switch(disp_state){
+      case 0:
+        del_interval = 2000;
+        tft.fillScreen(TFT_BLACK);   // Clear screen
+        tft.drawString(rtc.getTime("%a %Y-%m-%d %H:%M"), 0, 0, GFXFF);
+        tft.drawString("Current Temp: " + (String)cur_weather.temp + "F", 0, 30, GFXFF);
+        tft.drawString((String)cur_weather.description, 0, 60, GFXFF);
+        tft.drawString("Humidity " + (String)cur_weather.humidity + "%", 0, 90, GFXFF);
+        tft.drawString("Wind Speed: " + (String)cur_weather.wind_speed + "m/s", 0, 120, GFXFF);
+        break;
+      case 1:
+        del_interval = 1000;
+        //future weather
+        tft.fillScreen(TFT_BLUE);   
+        break;
+      case 2:
+        del_interval = 1000;
+        //future weather
+        tft.fillScreen(TFT_RED);  
+        break;
+    }
+  }
+  
+  if(cur_millis - prev_millis_disp >= del_interval){
+    prev_millis_disp = cur_millis;
+    disp_state = (disp_state + 1) % num_disp_states;
+    did_display = false;
+  }
+
 }
