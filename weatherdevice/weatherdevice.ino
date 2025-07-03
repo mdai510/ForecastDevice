@@ -164,6 +164,12 @@ void wifiConnect(){
   Serial.println("Connected to WiFi.");
 }
 
+String getFutureTime(int future_hrs){
+  ESP32Time temprtc = rtc;
+  temprtc.offset = tmz_offset + future_hrs*3600;
+  return temprtc.getTime("%a %Y-%m-%d %H:%M");
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
   //setup tft
@@ -218,6 +224,7 @@ void loop() {
     weather_lastcall = cur_millis;
   }
 
+  //TODO: display current, hourly, and daily weather based on button pressed
   if(!did_display){ //ensures content is only displayed one time per interval to prevent flickering
     did_display = true; 
     //switch cases enable cycling between different things to display and different time intervals for each display
@@ -232,14 +239,22 @@ void loop() {
         tft.drawString("Wind Speed: " + (String)cur_weather.wind_speed + "m/s", 0, 120, GFXFF);
         break;
       case 1:
-        del_interval = 1000;
-        //future weather
-        tft.fillScreen(TFT_BLUE);   
+        del_interval = 2000;
+        tft.fillScreen(TFT_BLACK);   // Clear screen
+        tft.drawString(getFutureTime(1), 0, 0, GFXFF);
+        tft.drawString("Temp in 1 hour: " + (String)hourly_weather[0].temp + "F", 0, 30, GFXFF);
+        tft.drawString((String)hourly_weather[0].description, 0, 60, GFXFF);
+        tft.drawString("Humidity " + (String)hourly_weather[0].humidity + "%", 0, 90, GFXFF);
+        tft.drawString("Wind Speed: " + (String)hourly_weather[0].wind_speed + "m/s", 0, 120, GFXFF);   
         break;
       case 2:
-        del_interval = 1000;
-        //future weather
-        tft.fillScreen(TFT_RED);  
+        del_interval = 2000;
+        tft.fillScreen(TFT_BLACK);   // Clear screen
+        tft.drawString(getFutureTime(2), 0, 0, GFXFF);
+        tft.drawString("Temp in 2 hours: " + (String)hourly_weather[1].temp + "F", 0, 30, GFXFF);
+        tft.drawString((String)hourly_weather[1].description, 0, 60, GFXFF);
+        tft.drawString("Humidity " + (String)hourly_weather[1].humidity + "%", 0, 90, GFXFF);
+        tft.drawString("Wind Speed: " + (String)hourly_weather[1].wind_speed + "m/s", 0, 120, GFXFF);   
         break;
     }
   }
