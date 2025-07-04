@@ -5,17 +5,20 @@
 #include <stdio.h>
 #include <time.h>
 #include <ESP32Time.h>
-
 //for display
 #include "SPI.h"
 #include "TFT_eSPI.h"
-// #include <LiquidCrystal.h>
-//LCD pins
-// const int rs = 12, en = 14, d4 = 5, d5 = 4, d6 = 2, d7 = 18;
-// LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
 // Stock font and GFXFF reference handle
 #define GFXFF 1
 #define FF18 &FreeSans12pt7b
+
+#define BUTTON1_PIN 13
+#define BUTTON2_PIN 12
+#define BUTTON3_PIN 14
+
+//track which button is pressed
+int button_state = 1; 
 
 // Use hardware SPI
 TFT_eSPI tft = TFT_eSPI();
@@ -26,9 +29,8 @@ const char* password = "vastviolin434";
 IPAddress ipv6;
 
 //IP API
-String ipAPICall = "http://ip-api.com/json/";
-String ipAPIFields = "?fields=country,countryCode,regionName,city,lat,lon";
-
+String ip_API_call = "http://ip-api.com/json/";
+String ip_API_fields = "?fields=country,countryCode,regionName,city,lat,lon";
 //Location information from IP API 
 const char* country;
 const char* ccode;
@@ -38,14 +40,12 @@ double lat;
 double lon;
 
 //Weather API
-String weatherAPIKey = "ccf6be088f6bb5825ed68cf25da130ce";
-String weatherAPICall = "https://api.openweathermap.org/data/3.0/onecall?lat=";
+String weather_API_key = "ccf6be088f6bb5825ed68cf25da130ce";
+String weather_API_call = "https://api.openweathermap.org/data/3.0/onecall?lat=";
 
 // time vars
-const char* ntpServer = "pool.ntp.org";
-const long daylightOffset = 0;
 ESP32Time rtc;
-int tmzOffset;
+int tmz_offset;
 
 // weather info struct
 struct weather_var{
@@ -71,24 +71,17 @@ int num_disp_states = 3;
 bool did_display = false; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void wifi_disconnected() {
-  Serial.println("WiFi Disconnected...");
-  WiFi.begin(ssid, password);
-  delay(1000);
-}
-
 //Gets location information from IPv6 Address
-String ip_location() {
+String ipLocation() {
   ipv6 = WiFi.globalIPv6();
   Serial.print("WiFi IPv6 Address: ");
   Serial.println(ipv6);
 
-  String ipv6Str = ipv6.toString();
-  ipAPICall = ipAPICall + "" + ipv6Str + "" + ipAPIFields;
+  String ipv6_str = ipv6.toString();
+  ip_API_call = ip_API_call + "" + ipv6_str + "" + ip_API_fields;
   //call api
   HTTPClient http;
-  http.begin(ipAPICall);
+  http.begin(ip_API_call);
   int httpCode = http.GET();
   if (httpCode > 0) {
     String payload = http.getString();
@@ -104,7 +97,7 @@ String ip_location() {
 }
 
 //Parses json information from IP API 
-void parse_ip_json(String location_json){
+void parseIP_JSON(String location_json){
   JsonDocument doc;
   deserializeJson(doc, location_json);
   country = doc["country"];
@@ -116,19 +109,19 @@ void parse_ip_json(String location_json){
 }
 
 //calls location functions
-void get_location(){
+void getLocation(){
   //Use IPLocation API to get location
-  String location_json = ip_location();
+  String location_json = ipLocation();
   while (location_json == "") {
-    location_json = ip_location();
+    location_json = ipLocation();
   }
   //parse json
-  parse_ip_json(location_json);
+  parseIP_JSON(location_json);
 }
 
 //gets weather information from weather API and sets variables accordingly
-int get_weather(){
-  String weatherAPIFullCall = weatherAPICall + "" + lat + "&lon=" + lon + "&units=imperial&exclude=minutely,alerts&appid=" + weatherAPIKey;
+int getWeather(){
+  String weatherAPIFullCall = weather_API_call + "" + lat + "&lon=" + lon + "&units=imperial&exclude=minutely,alerts&appid=" + weather_API_key;
   String weather_json;
 
   HTTPClient http;
@@ -146,7 +139,7 @@ int get_weather(){
 
   JsonDocument doc;
   deserializeJson(doc, weather_json);
-  tmzOffset = doc["timezone_offset"];
+  tmz_offset = doc["timezone_offset"];
   //get CURRENT weather
   cur_weather.dt = doc["current"]["dt"];
   cur_weather.temp = doc["current"]["temp"];
@@ -157,7 +150,6 @@ int get_weather(){
 
   //get weather for next few hours
   JsonArray hrly_data= doc["hourly"];
-
   for(int i = 0; i < 24; i++){
     hourly_weather[i].dt = hrly_data[i]["dt"];
     hourly_weather[i].temp = hrly_data[i]["temp"];
@@ -178,8 +170,19 @@ void wifiConnect(){
   Serial.println("Connected to WiFi.");
 }
 
+String getFutureTime(int future_hrs){
+  ESP32Time temprtc = rtc;
+  temprtc.offset = tmz_offset + future_hrs*3600;
+  return temprtc.getTime("%a %Y-%m-%d %H:%M");
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
+  //setup buttons
+  pinMode(BUTTON1_PIN, INPUT);
+  pinMode(BUTTON2_PIN, INPUT);
+  pinMode(BUTTON3_PIN, INPUT);
+
   //setup tft
   tft.begin();
   tft.setRotation(1);
@@ -200,17 +203,15 @@ void setup() {
   //get delay until IPv6 is valid (it takes some time)
   tft.fillScreen(TFT_BLACK);   // Clear screen
   tft.drawString("Obtaining IPv6...", 0, 30, GFXFF);
-  while (WiFi.globalIPv6().toString() == "::") {
-    Serial.println("Obtaining IPv6...");
-    delay(500);
-  }
+  Serial.println("Obtaining IPv6...");
+  while (WiFi.globalIPv6().toString() == "::") {}
 
-  get_location();
-  get_weather();
+  getLocation();
+  getWeather();
   weather_lastcall = millis();
 
-  //this is dumb lol
-  ESP32Time rtc1(tmzOffset);
+  //this is dumb lol... but works
+  ESP32Time rtc1(tmz_offset);
   rtc = rtc1;
   rtc.setTime(cur_weather.dt);
   WiFi.disconnect();
@@ -222,48 +223,87 @@ void loop() {
   unsigned long cur_millis = millis();
   unsigned long del_interval;
 
-  //add code to check if wifi and ip are connected
-
   //runs once every x time specified in weather_delay_mils
   //note: millis() overflow is not an issue because both millis and weather_lastcall are unsigned longs
   if(cur_millis - weather_lastcall >= weather_delay_mils){
     //call weather API
     wifiConnect();
-    get_weather();
+    getWeather();
     WiFi.disconnect();
     weather_lastcall = cur_millis;
   }
 
-  if(!did_display){ //ensures content is only displayed one time per interval to prevent flickering
+  if(digitalRead(BUTTON1_PIN)){
+    button_state = 1;
+    did_display = false;
+    Serial.println("BUTTON 1 PRESS");
+  }
+  else if(digitalRead(BUTTON2_PIN)){
+    button_state = 2;
+    did_display = false;
+    Serial.println("BUTTON 2 PRESS");
+  }
+  else if(digitalRead(BUTTON3_PIN)){
+    button_state = 3;
+    did_display = false;
+    Serial.println("BUTTON 3 PRESS");
+  }
+  else{}
+
+  //TODO: display current, hourly, and daily weather based on button pressed
+
+  if(button_state == 1 && !did_display){
+    did_display = true;
+    del_interval = 60*1000;
+    tft.fillScreen(TFT_BLACK);   // Clear screen
+    tft.drawString(rtc.getTime("%a %Y-%m-%d %H:%M"), 0, 0, GFXFF);
+    tft.drawString("Current Temp: " + (String)cur_weather.temp + "F", 0, 30, GFXFF);
+    tft.drawString((String)cur_weather.description, 0, 60, GFXFF);
+    tft.drawString("Humidity " + (String)cur_weather.humidity + "%", 0, 90, GFXFF);
+    tft.drawString("Wind Speed: " + (String)cur_weather.wind_speed + "m/s", 0, 120, GFXFF);
+  }
+  else if(button_state == 2 && !did_display){ //ensures content is only displayed one time per interval to prevent flickering
     did_display = true; 
     //switch cases enable cycling between different things to display and different time intervals for each display
-    switch(disp_state){
+    switch(disp_state){ 
       case 0:
-        del_interval = 2000;
+        del_interval = 3000;
         tft.fillScreen(TFT_BLACK);   // Clear screen
-        tft.drawString(rtc.getTime("%a %Y-%m-%d %H:%M"), 0, 0, GFXFF);
-        tft.drawString("Current Temp: " + (String)cur_weather.temp + "F", 0, 30, GFXFF);
-        tft.drawString((String)cur_weather.description, 0, 60, GFXFF);
-        tft.drawString("Humidity " + (String)cur_weather.humidity + "%", 0, 90, GFXFF);
-        tft.drawString("Wind Speed: " + (String)cur_weather.wind_speed + "m/s", 0, 120, GFXFF);
+        tft.drawString(getFutureTime(1), 0, 0, GFXFF);
+        tft.drawString("Temp in 1 hrs: " + (String)hourly_weather[0].temp + "F", 0, 30, GFXFF);
+        tft.drawString((String)hourly_weather[0].description, 0, 60, GFXFF);
+        tft.drawString("Humidity " + (String)hourly_weather[0].humidity + "%", 0, 90, GFXFF);
+        tft.drawString("Wind Speed: " + (String)hourly_weather[0].wind_speed + "m/s", 0, 120, GFXFF); 
         break;
       case 1:
-        del_interval = 1000;
-        //future weather
-        tft.fillScreen(TFT_BLUE);   
+        del_interval = 3000;
+        tft.fillScreen(TFT_BLACK);   // Clear screen
+        tft.drawString(getFutureTime(2), 0, 0, GFXFF);
+        tft.drawString("Temp in 2 hrs: " + (String)hourly_weather[1].temp + "F", 0, 30, GFXFF);
+        tft.drawString((String)hourly_weather[1].description, 0, 60, GFXFF);
+        tft.drawString("Humidity " + (String)hourly_weather[1].humidity + "%", 0, 90, GFXFF);
+        tft.drawString("Wind Speed: " + (String)hourly_weather[1].wind_speed + "m/s", 0, 120, GFXFF);  
         break;
       case 2:
-        del_interval = 1000;
-        //future weather
-        tft.fillScreen(TFT_RED);  
+        del_interval = 3000;
+        tft.fillScreen(TFT_BLACK);   // Clear screen
+        tft.drawString(getFutureTime(3), 0, 0, GFXFF);
+        tft.drawString("Temp in 3 hrs: " + (String)hourly_weather[2].temp + "F", 0, 30, GFXFF);
+        tft.drawString((String)hourly_weather[2].description, 0, 60, GFXFF);
+        tft.drawString("Humidity " + (String)hourly_weather[2].humidity + "%", 0, 90, GFXFF);
+        tft.drawString("Wind Speed: " + (String)hourly_weather[2].wind_speed + "m/s", 0, 120, GFXFF);   
         break;
     }
+  }
+  else if(button_state == 3 && !did_display){
+    did_display = true;
+    del_interval = 10000;
+    tft.fillScreen(TFT_RED); //temp until I put in daily forecast
   }
   
   if(cur_millis - prev_millis_disp >= del_interval){
     prev_millis_disp = cur_millis;
-    disp_state = (disp_state + 1) % num_disp_states;
+    if(button_state == 2) disp_state = (disp_state + 1) % num_disp_states;
     did_display = false;
   }
-
 }
