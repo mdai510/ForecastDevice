@@ -164,9 +164,8 @@ int getWeather(){
 //connect to wifi
 void wifiConnect(){
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Connecting to WiFi...");
-  }
+  Serial.println("Connecting to WiFi...");
+  while (WiFi.status() != WL_CONNECTED) {}
   WiFi.enableIPv6();
   Serial.println("Connected to WiFi.");
 }
