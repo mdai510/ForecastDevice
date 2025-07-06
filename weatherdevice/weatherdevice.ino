@@ -154,12 +154,12 @@ int getWeather(){
   //get weather for next few hours
   JsonArray hrly_data = doc["hourly"];
   for(int i = 0; i < 24; i++){
-    hourly_weather[i].dt = hrly_data[i]["dt"];
-    hourly_weather[i].temp = hrly_data[i]["temp"];
-    hourly_weather[i].humidity = hrly_data[i]["humidity"];
-    hourly_weather[i].wind_speed = hrly_data[i]["wind_speed"];
-    hourly_weather[i].description = hrly_data[i]["weather"][0]["description"];
-    hourly_weather[i].icon = hrly_data[i]["weather"][0]["icon"];
+    hourly_weather[i].dt = hrly_data[i+1]["dt"];
+    hourly_weather[i].temp = hrly_data[i+1]["temp"];
+    hourly_weather[i].humidity = hrly_data[i+1]["humidity"];
+    hourly_weather[i].wind_speed = hrly_data[i+1]["wind_speed"];
+    hourly_weather[i].description = hrly_data[i+1]["weather"][0]["description"];
+    hourly_weather[i].icon = hrly_data[i+1]["weather"][0]["icon"];
   }
 
   JsonArray daily_data = doc["daily"];
