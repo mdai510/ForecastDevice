@@ -50,7 +50,9 @@ int tmz_offset;
 // weather info struct
 struct weather_var{
   long dt;
-  float temp; //in Kelvin
+  const char* summary;  //only for daily
+  float temp;           //in Kelvin; max temp for daily
+  float min_temp;       //only for daily
   int humidity;
   float wind_speed;
   const char* description;
@@ -58,6 +60,7 @@ struct weather_var{
 };
 struct weather_var cur_weather;
 struct weather_var hourly_weather[24];
+struct weather_var daily_weather[7];
 
 // loop variables
 // weather call variables
@@ -67,7 +70,7 @@ unsigned long weather_delay_mils = delay_mins * 60 * 1000; //delay between weath
 // display loop variables
 unsigned long prev_millis_disp = 0;
 int disp_state = 0;
-int num_disp_states = 3;
+int num_disp_states;
 bool did_display = false; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,7 +152,7 @@ int getWeather(){
   cur_weather.icon = doc["current"]["weather"][0]["icon"];
 
   //get weather for next few hours
-  JsonArray hrly_data= doc["hourly"];
+  JsonArray hrly_data = doc["hourly"];
   for(int i = 0; i < 24; i++){
     hourly_weather[i].dt = hrly_data[i]["dt"];
     hourly_weather[i].temp = hrly_data[i]["temp"];
@@ -157,6 +160,18 @@ int getWeather(){
     hourly_weather[i].wind_speed = hrly_data[i]["wind_speed"];
     hourly_weather[i].description = hrly_data[i]["weather"][0]["description"];
     hourly_weather[i].icon = hrly_data[i]["weather"][0]["icon"];
+  }
+
+  JsonArray daily_data = doc["daily"];
+  for(int i = 0; i < 7; i++){
+    daily_weather[i].dt = daily_data[i+1]["dt"];
+    daily_weather[i].summary = daily_data[i+1]["summary"];
+    daily_weather[i].temp = daily_data[i+1]["temp"]["max"];
+    daily_weather[i].min_temp = daily_data[i+1]["temp"]["min"];
+    daily_weather[i].humidity = daily_data[i+1]["humidity"];
+    daily_weather[i].wind_speed = daily_data[i+1]["wind_speed"];
+    daily_weather[i].description = daily_data[i+1]["weather"][0]["description"];
+    daily_weather[i].icon = daily_data[i+1]["weather"][0]["icon"];
   }
   return 1;
 }
@@ -170,10 +185,12 @@ void wifiConnect(){
   Serial.println("Connected to WiFi.");
 }
 
-String getFutureTime(int future_hrs){
+String getFutureTime(int future_hrs, bool disp_time){
   ESP32Time temprtc = rtc;
   temprtc.offset = tmz_offset + future_hrs*3600;
-  return temprtc.getTime("%a %Y-%m-%d %H:%M");
+  if(disp_time) return temprtc.getTime("%a %Y-%m-%d %H:%M");
+  else return temprtc.getTime("%a %Y-%m-%d");
+  
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -240,12 +257,16 @@ void loop() {
   }
   else if(digitalRead(BUTTON2_PIN)){
     button_state = 2;
+    num_disp_states = 3;
     did_display = false;
+    disp_state = 0;
     Serial.println("BUTTON 2 PRESS");
   }
   else if(digitalRead(BUTTON3_PIN)){
     button_state = 3;
+    num_disp_states = 2;
     did_display = false;
+    disp_state = 0;
     Serial.println("BUTTON 3 PRESS");
   }
   else{}
@@ -269,7 +290,7 @@ void loop() {
       case 0:
         del_interval = 3000;
         tft.fillScreen(TFT_BLACK);   // Clear screen
-        tft.drawString(getFutureTime(1), 0, 0, GFXFF);
+        tft.drawString(getFutureTime(1, true), 0, 0, GFXFF);
         tft.drawString("Temp in 1 hrs: " + (String)hourly_weather[0].temp + "F", 0, 30, GFXFF);
         tft.drawString((String)hourly_weather[0].description, 0, 60, GFXFF);
         tft.drawString("Humidity " + (String)hourly_weather[0].humidity + "%", 0, 90, GFXFF);
@@ -278,7 +299,7 @@ void loop() {
       case 1:
         del_interval = 3000;
         tft.fillScreen(TFT_BLACK);   // Clear screen
-        tft.drawString(getFutureTime(2), 0, 0, GFXFF);
+        tft.drawString(getFutureTime(2, true), 0, 0, GFXFF);
         tft.drawString("Temp in 2 hrs: " + (String)hourly_weather[1].temp + "F", 0, 30, GFXFF);
         tft.drawString((String)hourly_weather[1].description, 0, 60, GFXFF);
         tft.drawString("Humidity " + (String)hourly_weather[1].humidity + "%", 0, 90, GFXFF);
@@ -287,7 +308,7 @@ void loop() {
       case 2:
         del_interval = 3000;
         tft.fillScreen(TFT_BLACK);   // Clear screen
-        tft.drawString(getFutureTime(3), 0, 0, GFXFF);
+        tft.drawString(getFutureTime(3, true), 0, 0, GFXFF);
         tft.drawString("Temp in 3 hrs: " + (String)hourly_weather[2].temp + "F", 0, 30, GFXFF);
         tft.drawString((String)hourly_weather[2].description, 0, 60, GFXFF);
         tft.drawString("Humidity " + (String)hourly_weather[2].humidity + "%", 0, 90, GFXFF);
@@ -297,13 +318,33 @@ void loop() {
   }
   else if(button_state == 3 && !did_display){
     did_display = true;
-    del_interval = 10000;
-    tft.fillScreen(TFT_RED); //temp until I put in daily forecast
+    switch(disp_state){
+      case 0:
+        del_interval = 3000;
+        tft.fillScreen(TFT_BLACK);   // Clear screen
+        tft.drawString("Today: " + getFutureTime(0, false), 0, 0, GFXFF);
+        tft.drawString("Max Temp: " + (String)daily_weather[0].temp + "F", 0, 30, GFXFF);
+        tft.drawString("Min Temp: " + (String)daily_weather[0].min_temp + "F", 0, 60, GFXFF);
+        tft.drawString((String)daily_weather[0].summary, 0, 90, GFXFF);
+        tft.drawString("Humidity " + (String)daily_weather[0].humidity + "%", 0, 120, GFXFF);
+        tft.drawString("Wind Speed: " + (String)daily_weather[0].wind_speed + "m/s", 0, 150, GFXFF); 
+        break;
+      case 1:
+        del_interval = 3000;
+        tft.fillScreen(TFT_BLACK);   // Clear screen
+        tft.drawString("Tmrw: " + getFutureTime(24, false), 0, 0, GFXFF);
+        tft.drawString("Max Temp: " + (String)daily_weather[1].temp + "F", 0, 30, GFXFF);
+        tft.drawString("Min Temp: " + (String)daily_weather[1].min_temp + "F", 0, 60, GFXFF);
+        tft.drawString((String)daily_weather[1].summary, 0, 90, GFXFF);
+        tft.drawString("Humidity " + (String)daily_weather[1].humidity + "%", 0, 120, GFXFF);
+        tft.drawString("Wind Speed: " + (String)daily_weather[1].wind_speed + "m/s", 0, 150, GFXFF); 
+        break;
+    }
   }
   
   if(cur_millis - prev_millis_disp >= del_interval){
     prev_millis_disp = cur_millis;
-    if(button_state == 2) disp_state = (disp_state + 1) % num_disp_states;
+    if(button_state == 2 || button_state == 3) disp_state = (disp_state + 1) % num_disp_states;
     did_display = false;
   }
 }
