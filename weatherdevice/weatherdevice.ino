@@ -11,7 +11,7 @@
 
 // Stock font and GFXFF reference handle
 #define GFXFF 1
-#define FF18 &FreeSans12pt7b
+#define FF1 &FreeMono9pt7b
 
 #define BUTTON1_PIN 13
 #define BUTTON2_PIN 12
@@ -185,12 +185,13 @@ void wifiConnect(){
   Serial.println("Connected to WiFi.");
 }
 
-String getFutureTime(int future_hrs, bool disp_time){
+String getFutureTime(int future_hrs, int disp_type){
   ESP32Time temprtc = rtc;
   temprtc.offset = tmz_offset + future_hrs*3600;
-  if(disp_time) return temprtc.getTime("%a %Y-%m-%d %H:%M");
-  else return temprtc.getTime("%a %Y-%m-%d");
-  
+  if(disp_type == 0) return temprtc.getTime("%a %Y-%m-%d %H:%M"); //D.O.W, date, time
+  else if(disp_type == 1) return temprtc.getTime("%a %Y-%m-%d"); //D.O.W, date
+  else if(disp_type == 2) return temprtc.getTime("%H:%M"); //time  
+  else return "invalid input";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +206,7 @@ void setup() {
   tft.setRotation(1);
   tft.setTextColor(TFT_GREEN, TFT_BLACK);
   tft.fillScreen(TFT_BLACK);   // Clear screen
-  tft.setFreeFont(FF18);       // Select the font
+  tft.setFreeFont(FF1);       // Select the font
 
   Serial.begin(115200);
 
@@ -277,11 +278,12 @@ void loop() {
     did_display = true;
     del_interval = 60*1000;
     tft.fillScreen(TFT_BLACK);   // Clear screen
-    tft.drawString(rtc.getTime("%a %Y-%m-%d %H:%M"), 0, 0, GFXFF);
+    tft.drawString("Now:  " + rtc.getTime("%a %Y-%m-%d %H:%M"), 0, 0, GFXFF);
+    tft.drawString("------------------------------------------------------------------", 0, 15, GFXFF);
     tft.drawString("Current Temp: " + (String)cur_weather.temp + "F", 0, 30, GFXFF);
-    tft.drawString((String)cur_weather.description, 0, 60, GFXFF);
-    tft.drawString("Humidity " + (String)cur_weather.humidity + "%", 0, 90, GFXFF);
-    tft.drawString("Wind Speed: " + (String)cur_weather.wind_speed + "m/s", 0, 120, GFXFF);
+    tft.drawString((String)cur_weather.description, 0, 50, GFXFF);
+    tft.drawString("Humidity " + (String)cur_weather.humidity + "%", 0, 70, GFXFF);
+    tft.drawString("Wind Speed: " + (String)cur_weather.wind_speed + "m/s", 0, 90, GFXFF);
   }
   else if(button_state == 2 && !did_display){ //ensures content is only displayed one time per interval to prevent flickering
     did_display = true; 
@@ -290,7 +292,7 @@ void loop() {
       case 0:
         del_interval = 3000;
         tft.fillScreen(TFT_BLACK);   // Clear screen
-        tft.drawString(getFutureTime(1, true), 0, 0, GFXFF);
+        tft.drawString(getFutureTime(1, 0), 0, 0, GFXFF);
         tft.drawString("Temp in 1 hrs: " + (String)hourly_weather[0].temp + "F", 0, 30, GFXFF);
         tft.drawString((String)hourly_weather[0].description, 0, 60, GFXFF);
         tft.drawString("Humidity " + (String)hourly_weather[0].humidity + "%", 0, 90, GFXFF);
@@ -299,7 +301,7 @@ void loop() {
       case 1:
         del_interval = 3000;
         tft.fillScreen(TFT_BLACK);   // Clear screen
-        tft.drawString(getFutureTime(2, true), 0, 0, GFXFF);
+        tft.drawString(getFutureTime(2, 0), 0, 0, GFXFF);
         tft.drawString("Temp in 2 hrs: " + (String)hourly_weather[1].temp + "F", 0, 30, GFXFF);
         tft.drawString((String)hourly_weather[1].description, 0, 60, GFXFF);
         tft.drawString("Humidity " + (String)hourly_weather[1].humidity + "%", 0, 90, GFXFF);
@@ -308,7 +310,7 @@ void loop() {
       case 2:
         del_interval = 3000;
         tft.fillScreen(TFT_BLACK);   // Clear screen
-        tft.drawString(getFutureTime(3, true), 0, 0, GFXFF);
+        tft.drawString(getFutureTime(3, 0), 0, 0, GFXFF);
         tft.drawString("Temp in 3 hrs: " + (String)hourly_weather[2].temp + "F", 0, 30, GFXFF);
         tft.drawString((String)hourly_weather[2].description, 0, 60, GFXFF);
         tft.drawString("Humidity " + (String)hourly_weather[2].humidity + "%", 0, 90, GFXFF);
@@ -322,7 +324,7 @@ void loop() {
       case 0:
         del_interval = 3000;
         tft.fillScreen(TFT_BLACK);   // Clear screen
-        tft.drawString("Today: " + getFutureTime(0, false), 0, 0, GFXFF);
+        tft.drawString("Today: " + getFutureTime(0, 1), 0, 0, GFXFF);
         tft.drawString("Max Temp: " + (String)daily_weather[0].temp + "F", 0, 30, GFXFF);
         tft.drawString("Min Temp: " + (String)daily_weather[0].min_temp + "F", 0, 60, GFXFF);
         tft.drawString((String)daily_weather[0].summary, 0, 90, GFXFF);
@@ -332,7 +334,7 @@ void loop() {
       case 1:
         del_interval = 3000;
         tft.fillScreen(TFT_BLACK);   // Clear screen
-        tft.drawString("Tmrw: " + getFutureTime(24, false), 0, 0, GFXFF);
+        tft.drawString("Tmrw: " + getFutureTime(24, 1), 0, 0, GFXFF);
         tft.drawString("Max Temp: " + (String)daily_weather[1].temp + "F", 0, 30, GFXFF);
         tft.drawString("Min Temp: " + (String)daily_weather[1].min_temp + "F", 0, 60, GFXFF);
         tft.drawString((String)daily_weather[1].summary, 0, 90, GFXFF);
