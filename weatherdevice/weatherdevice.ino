@@ -83,7 +83,7 @@ const int arr_disp_states[] = {5, 3, 2};
 int num_buttons = sizeof(button_pins) / sizeof(button_pins[0]);
 int button_state = 1;
 bool button_pressed = false;
-bool any_pressed = true;
+bool any_pressed;
 
 //use hardware SPI
 TFT_eSPI tft = TFT_eSPI();
@@ -389,6 +389,7 @@ void loop() {
   }
 
   //handle button presses
+  any_pressed = false;
   for(int i = 0; i < num_buttons; i++){
     if(digitalRead(button_pins[i])){
       any_pressed = true;
@@ -404,7 +405,7 @@ void loop() {
       break;
     }
   }
-  if(!any_pressed) button_pressed = false;
+  if(!any_pressed && button_pressed) button_pressed = false;
   
   if (button_state == 1 && !did_display) { //display current weather at top of screen and cycle through hourly weather at the bottom
     did_display = true;
@@ -428,6 +429,7 @@ void loop() {
     tft.drawString((String)hourly_weather[start_indx].temp + "F", 2, 165);
     tft.setFreeFont(CF_OSR12);
     tft.drawString((String)hourly_weather[start_indx].description, 1, 180);
+    tft.drawString("Rain:" + (String)hourly_weather[start_indx].pop + "%", 1, 200);
     tft.setFreeFont(CF_OSR15);
     tft.drawLine(64, 94, 64, 240, TFT_GREEN);
 
@@ -435,7 +437,7 @@ void loop() {
     printIcon(hourly_weather[start_indx+1].icon, 59, 100, 1);
     tft.drawString((String)hourly_weather[start_indx+1].temp + "F", 70, 165);
     tft.setFreeFont(CF_OSR12);
-    tft.drawString((String)hourly_weather[start_indx+1].description, 70, 180);
+    tft.drawString((String)hourly_weather[start_indx+1].description, 68, 180);
     tft.setFreeFont(CF_OSR15);
     tft.drawLine(128, 94, 128, 240, TFT_GREEN);
 
@@ -443,7 +445,7 @@ void loop() {
     printIcon(hourly_weather[start_indx+2].icon, 123, 100, 1);
     tft.drawString((String)hourly_weather[start_indx+2].temp + "F", 134, 165);
     tft.setFreeFont(CF_OSR12);
-    tft.drawString((String)hourly_weather[start_indx+2].description, 130, 180);
+    tft.drawString((String)hourly_weather[start_indx+2].description, 131, 180);
     tft.setFreeFont(CF_OSR15);
     tft.drawLine(192, 94, 192, 240, TFT_GREEN);
 
