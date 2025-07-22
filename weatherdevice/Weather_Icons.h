@@ -1,0 +1,39 @@
+//load in all custom images
+
+#include <Weather_Icons/w01d.h> 
+#include <Weather_Icons/w01n.h> 
+#include <Weather_Icons/w02d.h> 
+#include <Weather_Icons/w02n.h> 
+#include <Weather_Icons/w03d.h> 
+#include <Weather_Icons/w03n.h> 
+#include <Weather_Icons/w04d.h> 
+#include <Weather_Icons/w04n.h> 
+#include <Weather_Icons/w09d.h> 
+#include <Weather_Icons/w09n.h> 
+#include <Weather_Icons/w10d.h> 
+#include <Weather_Icons/w10n.h> 
+#include <Weather_Icons/w11d.h> 
+#include <Weather_Icons/w11n.h> 
+#include <Weather_Icons/w13d.h> 
+#include <Weather_Icons/w13n.h> 
+#include <Weather_Icons/w50d.h> 
+#include <Weather_Icons/w50n.h> 
+#include <Weather_Icons/ws01d.h> 
+#include <Weather_Icons/ws01n.h> 
+#include <Weather_Icons/ws02d.h> 
+#include <Weather_Icons/ws02n.h> 
+#include <Weather_Icons/ws03d.h> 
+#include <Weather_Icons/ws03n.h> 
+#include <Weather_Icons/ws04d.h> 
+#include <Weather_Icons/ws04n.h> 
+#include <Weather_Icons/ws09d.h> 
+#include <Weather_Icons/ws09n.h> 
+#include <Weather_Icons/ws10d.h> 
+#include <Weather_Icons/ws10n.h> 
+#include <Weather_Icons/ws11d.h> 
+#include <Weather_Icons/ws11n.h> 
+#include <Weather_Icons/ws13d.h> 
+#include <Weather_Icons/ws13n.h> 
+#include <Weather_Icons/ws50d.h> 
+#include <Weather_Icons/ws50n.h> 
+	
