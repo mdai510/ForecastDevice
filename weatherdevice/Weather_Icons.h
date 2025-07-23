@@ -36,4 +36,6 @@
 #include <Weather_Icons/ws13n.h> 
 #include <Weather_Icons/ws50d.h> 
 #include <Weather_Icons/ws50n.h> 
+#include <Weather_Icons/rain_small.h> 
+#include <Weather_Icons/wind_small.h> 
 	
