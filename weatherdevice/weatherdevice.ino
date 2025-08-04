@@ -28,49 +28,67 @@ struct Icon_Data icon_table[] = {
   { "01n", w01n, sizeof(w01n) },
   { "02d", w02d, sizeof(w02d) },
   { "02n", w02n, sizeof(w02n) },
-  { "03d", w03d, sizeof(w03d) },
-  { "03n", w03n, sizeof(w03n) },
-  { "04d", w04d, sizeof(w04d) },
-  { "04n", w04n, sizeof(w04n) },
-  { "09d", w09d, sizeof(w09d) },
-  { "09n", w09n, sizeof(w09n) },
+  { "03d", w03, sizeof(w03) },
+  { "03n", w03, sizeof(w03) },
+  { "04d", w04, sizeof(w04) },
+  { "04n", w04, sizeof(w04) },
+  { "09d", w09, sizeof(w09) },
+  { "09n", w09, sizeof(w09) },
   { "10d", w10d, sizeof(w10d) },
   { "10n", w10n, sizeof(w10n) },
-  { "11d", w11d, sizeof(w11d) },
-  { "11n", w11n, sizeof(w11n) },
-  { "13d", w13d, sizeof(w13d) },
-  { "13n", w13n, sizeof(w13n) },
-  { "50d", w50d, sizeof(w50d) },
-  { "50n", w50n, sizeof(w50n) },
-  { "wind_large", wind_large, sizeof(wind_large) }
+  { "11d", w11, sizeof(w11) },
+  { "11n", w11, sizeof(w11) },
+  { "13d", w13, sizeof(w13) },
+  { "13n", w13, sizeof(w13) },
+  { "50d", w50, sizeof(w50) },
+  { "50n", w50, sizeof(w50) }
 };
 struct Icon_Data small_icon_table[] = {
   { "01d", ws01d, sizeof(ws01d) },
   { "01n", ws01n, sizeof(ws01n) },
   { "02d", ws02d, sizeof(ws02d) },
   { "02n", ws02n, sizeof(ws02n) },
-  { "03d", ws03d, sizeof(ws03d) },
-  { "03n", ws03n, sizeof(ws03n) },
-  { "04d", ws04d, sizeof(ws04d) },
-  { "04n", ws04n, sizeof(ws04n) },
-  { "09d", ws09d, sizeof(ws09d) },
-  { "09n", ws09n, sizeof(ws09n) },
+  { "03d", ws03, sizeof(ws03) },
+  { "03n", ws03, sizeof(ws03) },
+  { "04d", ws04, sizeof(ws04) },
+  { "04n", ws04, sizeof(ws04) },
+  { "09d", ws09, sizeof(ws09) },
+  { "09n", ws09, sizeof(ws09) },
   { "10d", ws10d, sizeof(ws10d) },
   { "10n", ws10n, sizeof(ws10n) },
-  { "11d", ws11d, sizeof(ws11d) },
-  { "11n", ws11n, sizeof(ws11n) },
-  { "13d", ws13d, sizeof(ws13d) },
-  { "13n", ws13n, sizeof(ws13n) },
-  { "50d", ws50d, sizeof(ws50d) },
-  { "50n", ws50n, sizeof(ws50n) },
-  { "rain_small", rain_small, sizeof(rain_small) },
+  { "11d", ws11, sizeof(ws11) },
+  { "11n", ws11, sizeof(ws11) },
+  { "13d", ws13, sizeof(ws13) },
+  { "13n", ws13, sizeof(ws13) },
+  { "50d", ws50, sizeof(ws50) },
+  { "50n", ws50, sizeof(ws50) }, 
+  { "rain_small", rain_small, sizeof(rain_small) }, 
   { "wind_small", wind_small, sizeof(wind_small) },
   { "sunrise_small", sunrise_small, sizeof(sunrise_small) },
   { "sunset_small", sunset_small, sizeof(sunset_small) }
 };
-const int num_icons = sizeof(icon_table);
-const uint8_t* selected_data = nullptr;
-size_t selected_size = 0;
+struct Icon_Data tiny_icon_table[] = {
+  { "01d", wt01d, sizeof(wt01d) },
+  { "01n", wt01n, sizeof(wt01n) },
+  { "02d", wt02d, sizeof(wt02d) },
+  { "02n", wt02n, sizeof(w02n) },
+  { "03d", wt03, sizeof(wt03) },
+  { "03n", wt03, sizeof(wt03) },
+  { "04d", wt04, sizeof(wt04) },
+  { "04n", wt04, sizeof(wt04) },
+  { "09d", wt09, sizeof(wt09) },
+  { "09n", wt09, sizeof(wt09) },
+  { "10d", wt10d, sizeof(wt10d) },
+  { "10n", wt10n, sizeof(wt10n) },
+  { "11d", wt11, sizeof(wt11) },
+  { "11n", wt11, sizeof(wt11) },
+  { "13d", wt13, sizeof(wt13) },
+  { "13n", wt13, sizeof(wt13) },
+  { "50d", wt50, sizeof(wt50) },
+  { "50n", wt50, sizeof(wt50) }
+};
+Icon_Data* icon_table_arr[] = {icon_table, small_icon_table, tiny_icon_table};
+const int icon_table_sizes[] = {sizeof(icon_table)/sizeof(icon_table[0]), sizeof(small_icon_table)/sizeof(small_icon_table[0]), sizeof(tiny_icon_table)/sizeof(tiny_icon_table[0])};
 
 //custom fonts and GFXFF reference handle
 #define GFXFF 1
@@ -79,6 +97,8 @@ size_t selected_size = 0;
 #define CF_OSR13 &Open_Sans_Regular_13
 #define CF_OSR14 &Open_Sans_Regular_14
 #define CF_OSR15 &Open_Sans_Regular_15
+#define CF_OSR17 &Open_Sans_Regular_17
+#define CF_OSR20 &Open_Sans_Regular_20
 #define CF_OSCB11 &Open_Sans_Condensed_Bold_11
 
 //button pins
@@ -87,7 +107,7 @@ size_t selected_size = 0;
 #define BUTTON3_PIN 14
 //track which button is pressed
 const int button_pins[] = {BUTTON1_PIN, BUTTON2_PIN, BUTTON3_PIN};
-const int arr_disp_states[] = {5, 2, 2};
+const int arr_disp_states[] = {5, 2, 0};
 int num_buttons = sizeof(button_pins) / sizeof(button_pins[0]);
 int button_state = 1;
 bool button_pressed = false;
@@ -224,16 +244,21 @@ int getWeather() {
 
   HTTPClient http;
   http.begin(weatherAPIFullCall);
+  int tries = 0;
   int httpCode = http.GET();
-  if (httpCode > 0){
-    weather_json = http.getString();
-    Serial.print("Returned Payload: ");
-    Serial.println(weather_json);
-  } 
-  else{
-    Serial.println("Error on HTTP Request.");
+  while(httpCode <= 0 && tries <= 5){
+      Serial.println("Error on HTTP Request.");
+      tries++;
+      http.begin(weatherAPIFullCall);
+      httpCode = http.GET();
+  }
+  if(tries == 5) {
+    Serial.println("Could not get weather data");
     return 0;
   }
+  weather_json = http.getString();
+  Serial.print("Returned Payload: ");
+  Serial.println(weather_json);
   http.end();
 
   Serial.println("Deserializing weather JSON");
@@ -329,25 +354,17 @@ void pngDraw(PNGDRAW* pDraw) {
   }
 }
 
-//prints icon according to name, location, and type (large or small)
+//prints icon according to name, location, and size
 void printIcon(const char* name, int x, int y, int img_type) {
   uint8_t* icon_data = nullptr;
   unsigned long long icon_size = 0;
-
+  int num_icons = icon_table_sizes[img_type];
+  
   for (int i = 0; i < num_icons; i++) {
-    if(img_type == 0){ //large icon table
-      if (strcmp(icon_table[i].name, name) == 0) {
-        icon_data = const_cast<uint8_t*>(icon_table[i].data);
-        icon_size = icon_table[i].size;
-        break;
-      }
-    }
-    else if(img_type == 1){ //small icon table
-      if (strcmp(small_icon_table[i].name, name) == 0) {
-        icon_data = const_cast<uint8_t*>(small_icon_table[i].data);
-        icon_size = small_icon_table[i].size;
-        break;
-      }
+    if(strcmp(icon_table_arr[img_type][i].name, name) == 0){
+      icon_data = const_cast<uint8_t*>(icon_table_arr[img_type][i].data);
+      icon_size = icon_table_arr[img_type][i].size;
+      break;
     }
   }
   //if no icon with inpt name found
@@ -371,10 +388,11 @@ void printIcon(const char* name, int x, int y, int img_type) {
 //modes: 0 - hourly weather, break each string up into multiple lines and lower font size if necessary 
 //1 - daily weather, lowers font size if necessary
 //note: assumes starting font size is 12 Open Sans
-void print_handler(int mode, String to_print, int x, int y){
-  tft.setFreeFont(CF_OSR12);
+//returns: 0 for failure, 1 for no overflow, 2 for overflow
+int printHandler(int mode, String to_print, int x, int y){
   int string_len = to_print.length();
   if(mode == 0){
+    tft.setFreeFont(CF_OSR12);
     if(string_len > 8){ //split str to words
       String words[5];
       int word_index = 0;
@@ -440,14 +458,19 @@ void print_handler(int mode, String to_print, int x, int y){
         }
         line_num++;
       }
+      if(line_num >= 1){
+        return 2;
+      }
+      return 1;
     }
     else{
       tft.setFreeFont(CF_OSR13);
       tft.drawString(to_print, x+(int)((9-string_len)*2.5), y, GFXFF); //print no modification
-      Serial.println("PRINT CASE 0");
+      return 1;
     }
   }
   else if(mode == 1){
+    tft.setFreeFont(CF_OSR12);
     for(int i = 0; i < NUM_CUT_STRINGS; i++){ //Shorten and capitalize
       if(to_print.indexOf(cut_strings[i]) != -1){
         to_print = to_print.substring(cut_strings[i].length());
@@ -465,18 +488,36 @@ void print_handler(int mode, String to_print, int x, int y){
       }
       String fst_str = to_print.substring(0, break_indx);
       String scd_str = to_print.substring(break_indx+1, string_len);
-      tft.drawString(fst_str, x, y-12, GFXFF);
-      tft.drawString(scd_str, x, y, GFXFF);
+      tft.drawString(fst_str, x, y-10, GFXFF);
+      tft.drawString(scd_str, x, y+2, GFXFF);
+      return 2;
     }
     else{
       tft.drawString(to_print, x, y, GFXFF);
+      return 1;
     }
+  }
+  else if(mode == 2){
+    if(string_len >= 22){
+      int break_indx = 0;
+      for(int i = 17; i < string_len; i++){
+        if(to_print[i] == 0x20){
+          break_indx = i;
+          String fst_str = to_print.substring(0, break_indx);
+          String scd_str = to_print.substring(break_indx+1, string_len);
+          tft.drawString(fst_str, x, y-7, GFXFF);
+          tft.drawString(scd_str, x, y+7, GFXFF);
+          return 2;
+        }
+      }
+    }
+    tft.drawString(to_print, x, y, GFXFF);
+    return 1;
   }
   else{
     Serial.println("ERROR: Invalid mode for print handler");
-    return;
+    return 0;
   }
-  tft.setFreeFont(CF_OSR12);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
@@ -536,14 +577,17 @@ void loop() {
 
   //handle button presses
   any_pressed = false;
+  int prev_button_state = button_state;
   for(int i = 0; i < num_buttons; i++){
     if(digitalRead(button_pins[i])){
       any_pressed = true;
       if(!button_pressed){
         button_state = i + 1;
-        num_disp_states = arr_disp_states[i];
+        if(button_state <= 2){
+          num_disp_states = arr_disp_states[i];
+          disp_state = 0;
+        }
         did_display = false;
-        disp_state = 0;
         Serial.print("Button Pressed: ");
         Serial.println(i + 1);
         button_pressed = true;
@@ -555,7 +599,8 @@ void loop() {
   
   if (button_state == 1 && !did_display) { //display current weather at top of screen and cycle through hourly weather at the bottom
     did_display = true;
-    del_interval = 6 * 1000;
+    del_interval = 8 * 1000;
+    prev_millis_disp = cur_millis;
     int start_indx = disp_state * 5; //cycles btwn 0, 5, 10, 15, 20 
 
     //top for current weather
@@ -565,9 +610,11 @@ void loop() {
     Serial.println(rtc.getTime("%a %Y-%m-%d %H:%M"));
     tft.drawLine(0, 17, 320, 17, TFT_GREEN);
     
-    printIcon(cur_weather.icon, 180, -5, 0);
-    tft.drawString((String)cur_weather.temp + "F", 5, 30, GFXFF);
-    tft.drawString((String)cur_weather.description, 5, 53, GFXFF);
+    printIcon(cur_weather.icon, 180, 2, 0);
+    tft.setFreeFont(CF_OSR20);
+    tft.drawString((String)cur_weather.temp + "F", 5, 25, GFXFF);
+    tft.setFreeFont(CF_OSR14);
+    printHandler(2, (String)cur_weather.description, 5, 51);
     tft.setFreeFont(CF_OSR13);
     tft.drawString("Humid. " + (String)cur_weather.humidity + "%", 5, 76, GFXFF);
     printIcon("wind_small", 93, 72, 1);
@@ -579,16 +626,15 @@ void loop() {
     tft.drawLine(0, 94, 320, 94, TFT_GREEN);
     tft.setFreeFont(CF_OSR15);
 
-    //hourly weather cycled
+    //hourly weather cycled; im sure i could loop this but im lazy
     tft.drawString(getFutureTime(start_indx+1, 3) + ":00", 5, 100, GFXFF);
     printIcon(hourly_weather[start_indx].icon, -10, 98, 1);
     tft.drawString((String)hourly_weather[start_indx].temp + "F", 2, 158);
-    print_handler(0, (String)hourly_weather[start_indx].description, 1, 174);
+    printHandler(0, (String)hourly_weather[start_indx].description, 1, 174);
     tft.setFreeFont(CF_OSR12);
     tft.drawString((String)hourly_weather[start_indx].pop + "%", 25, 209);
     printIcon("rain_small", 10, 205, 1);
-    tft.setFreeFont(CF_OSCB11);
-    tft.drawString(String(hourly_weather[start_indx].wind_speed, 1) + "m/s", 21, 227);
+    tft.drawString(String(hourly_weather[start_indx].wind_speed, 0) + "m/s", 21, 227);
     printIcon("wind_small", 2, 225, 1);
     tft.setFreeFont(CF_OSR15);
     tft.drawLine(64, 94, 64, 240, TFT_GREEN);
@@ -596,12 +642,11 @@ void loop() {
     tft.drawString(getFutureTime(start_indx+2, 3) + ":00", 74, 100, GFXFF);
     printIcon(hourly_weather[start_indx+1].icon, 59, 98, 1);
     tft.drawString((String)hourly_weather[start_indx+1].temp + "F", 70, 158);
-    print_handler(0, (String)hourly_weather[start_indx+1].description, 67, 174);
+    printHandler(0, (String)hourly_weather[start_indx+1].description, 67, 174);
     tft.setFreeFont(CF_OSR12);
     tft.drawString((String)hourly_weather[start_indx+1].pop + "%", 90, 209);
     printIcon("rain_small", 75, 205, 1);
-    tft.setFreeFont(CF_OSCB11);
-    tft.drawString(String(hourly_weather[start_indx+1].wind_speed, 1) + "m/s", 86, 227);
+    tft.drawString(String(hourly_weather[start_indx+1].wind_speed, 0) + "m/s", 86, 227);
     printIcon("wind_small", 67, 225, 1);
     tft.setFreeFont(CF_OSR15);
     tft.drawLine(128, 94, 128, 240, TFT_GREEN);
@@ -609,12 +654,11 @@ void loop() {
     tft.drawString(getFutureTime(start_indx+3, 3) + ":00", 138, 100, GFXFF);
     printIcon(hourly_weather[start_indx+2].icon, 123, 98, 1);
     tft.drawString((String)hourly_weather[start_indx+2].temp + "F", 134, 158);
-    print_handler(0, (String)hourly_weather[start_indx+2].description, 131, 174);
+    printHandler(0, (String)hourly_weather[start_indx+2].description, 131, 174);
     tft.setFreeFont(CF_OSR12);
     tft.drawString((String)hourly_weather[start_indx+2].pop + "%", 154, 209);
     printIcon("rain_small", 138, 205, 1);
-    tft.setFreeFont(CF_OSCB11);
-    tft.drawString(String(hourly_weather[start_indx+2].wind_speed, 1) + "m/s", 149, 227);
+    tft.drawString(String(hourly_weather[start_indx+2].wind_speed, 0) + "m/s", 149, 227);
     printIcon("wind_small", 130, 225, 1);
     tft.setFreeFont(CF_OSR15);
     tft.drawLine(192, 94, 192, 240, TFT_GREEN);
@@ -622,12 +666,11 @@ void loop() {
     tft.drawString(getFutureTime(start_indx+4, 3) + ":00", 202, 100, GFXFF);
     printIcon(hourly_weather[start_indx+3].icon, 187, 98, 1);
     tft.drawString((String)hourly_weather[start_indx+3].temp + "F", 198, 158);
-    print_handler(0, (String)hourly_weather[start_indx+3].description, 196, 174);
+    printHandler(0, (String)hourly_weather[start_indx+3].description, 196, 174);
     tft.setFreeFont(CF_OSR12);
     tft.drawString((String)hourly_weather[start_indx+3].pop + "%", 218, 209);
     printIcon("rain_small", 202, 205, 1);
-    tft.setFreeFont(CF_OSCB11);
-    tft.drawString(String(hourly_weather[start_indx+3].wind_speed, 1) + "m/s", 213, 227);
+    tft.drawString(String(hourly_weather[start_indx+3].wind_speed, 0) + "m/s", 213, 227);
     printIcon("wind_small", 194, 225, 1);
     tft.setFreeFont(CF_OSR15);
     tft.drawLine(256, 94, 256, 240, TFT_GREEN);
@@ -637,21 +680,21 @@ void loop() {
       tft.drawString(getFutureTime(start_indx+5, 3) + ":00", 266, 100, GFXFF);
       printIcon(hourly_weather[start_indx+4].icon, 251, 98, 1);
       tft.drawString((String)hourly_weather[start_indx+4].temp + "F", 262, 158);
-      print_handler(0, (String)hourly_weather[start_indx+4].description, 260, 174);
+      printHandler(0, (String)hourly_weather[start_indx+4].description, 260, 174);
       tft.setFreeFont(CF_OSR12);
       tft.drawString((String)hourly_weather[start_indx+4].pop + "%", 282, 209);
       printIcon("rain_small", 266, 205, 1);
-      tft.setFreeFont(CF_OSCB11);
-      tft.drawString(String(hourly_weather[start_indx+4].wind_speed, 1) + "m/s", 277, 227);
+      tft.drawString(String(hourly_weather[start_indx+4].wind_speed, 0) + "m/s", 277, 227);
       printIcon("wind_small", 258, 225, 1);
       tft.setFreeFont(CF_OSR15);
     }
   }
-  else if (button_state == 2 && !did_display) {  //display daily weather for 7 days
+  else if (button_state == 2 && !did_display) {     //display daily weather for 7 days
     did_display = true;
-    del_interval = 6 * 1000;
+    del_interval = 15 * 1000;
+    prev_millis_disp = cur_millis;
     int start_indx = disp_state * 4;
-    tft.setTextWrap(true, false);
+
     //top 
     tft.fillScreen(TFT_BLACK);  //clear screen
     tft.drawString("Now:  " + rtc.getTime("%a %Y-%m-%d %H:%M"), 0, 0, GFXFF);
@@ -660,67 +703,76 @@ void loop() {
     if(start_indx == 0) tft.drawString("Today:", 2, 25);
     else tft.drawString(getFutureTime(start_indx*24, 4)+":", 2, 25);
     tft.setFreeFont(CF_OSR14);
-    printIcon(daily_weather[start_indx].icon, 40, 1, 1);
     printIcon("rain_small", 105, 22, 1);
     tft.drawString((String)daily_weather[start_indx].pop + "%", 120, 24);
-    printIcon("wind_small", 164, 22, 1);
-    tft.drawString(String(daily_weather[start_indx].wind_speed, 1) + "m/s", 183, 24);
-    tft.setFreeFont(CF_OSR15);
-    tft.drawString(String(daily_weather[start_indx].temp,0) + " / " + String(daily_weather[start_indx].min_temp,0) + "F", 249, 24);
+    printIcon("wind_small", 162, 22, 1);
+    tft.drawString(String(daily_weather[start_indx].wind_speed, 0) + "m/s", 181, 24);
+    tft.setFreeFont(CF_OSR17);
+    tft.drawString(String(daily_weather[start_indx].temp,0) + "|" + String(daily_weather[start_indx].min_temp,0) + "F", 234, 24);
     tft.setFreeFont(CF_OSR12);
-    print_handler(1, daily_weather[start_indx].summary, 2 ,60);
+    if(printHandler(1, daily_weather[start_indx].summary, 2 ,60) == 2){
+      printIcon(daily_weather[start_indx].icon, 44, 8, 2);
+    }
+    else printIcon(daily_weather[start_indx].icon, 40, 1, 1);
+    printHandler(1, daily_weather[start_indx].summary, 2 ,60);
     tft.setFreeFont(CF_OSR15);
     tft.drawLine(0, 73, 320, 73, TFT_GREEN);
 
     tft.drawString(getFutureTime((start_indx+1)*24, 4)+":", 2, 79);
     tft.setFreeFont(CF_OSR14);
-    printIcon(daily_weather[start_indx+1].icon, 40, 57, 1);
     printIcon("rain_small", 105, 80, 1);
     tft.drawString((String)daily_weather[start_indx+1].pop + "%", 120, 82);
-    printIcon("wind_small", 164, 80, 1);
-    tft.drawString(String(daily_weather[start_indx+1].wind_speed, 1) + "m/s", 183, 82);
-    tft.setFreeFont(CF_OSR15);
-    tft.drawString(String(daily_weather[start_indx+1].temp,0) + " / " + String(daily_weather[start_indx+1].min_temp,0) + "F", 249, 82);
+    printIcon("wind_small", 162, 80, 1);
+    tft.drawString(String(daily_weather[start_indx+1].wind_speed, 0) + "m/s", 181, 82);
+    tft.setFreeFont(CF_OSR17);
+    tft.drawString(String(daily_weather[start_indx+1].temp,0) + "|" + String(daily_weather[start_indx+1].min_temp,0) + "F", 234, 82);
     tft.setFreeFont(CF_OSR12);
-    print_handler(1, daily_weather[start_indx+1].summary, 2 ,115);
+    if(printHandler(1, daily_weather[start_indx+1].summary, 2 ,115) == 2){
+      printIcon(daily_weather[start_indx+1].icon, 44, 64, 2);
+    }
+    else printIcon(daily_weather[start_indx+1].icon, 40, 57, 1);
     tft.setFreeFont(CF_OSR15);
     tft.drawLine(0, 129, 320, 129, TFT_GREEN);
 
     tft.drawString(getFutureTime((start_indx+2)*24, 4)+":", 2, 135);
     tft.setFreeFont(CF_OSR14);
-    printIcon(daily_weather[start_indx+2].icon, 40, 113, 1);
     printIcon("rain_small", 105, 136, 1);
     tft.drawString((String)daily_weather[start_indx+2].pop + "%", 120, 138);
-    printIcon("wind_small", 164, 136, 1);
-    tft.drawString(String(daily_weather[start_indx+2].wind_speed, 1) + "m/s", 183, 138);
-    tft.setFreeFont(CF_OSR15);
-    tft.drawString(String(daily_weather[start_indx+2].temp,0) + " / " + String(daily_weather[start_indx+2].min_temp,0) + "F", 249, 138);
+    printIcon("wind_small", 162, 136, 1);
+    tft.drawString(String(daily_weather[start_indx+2].wind_speed, 0) + "m/s", 181, 138);
+    tft.setFreeFont(CF_OSR17);
+    tft.drawString(String(daily_weather[start_indx+2].temp,0) + "|" + String(daily_weather[start_indx+2].min_temp,0) + "F", 234, 138);
     tft.setFreeFont(CF_OSR12);
-    print_handler(1, daily_weather[start_indx+2].summary, 2 ,170);
+    if(printHandler(1, daily_weather[start_indx+2].summary, 2 ,170) == 2){
+      printIcon(daily_weather[start_indx+2].icon, 44, 120, 2);
+    }
+    else printIcon(daily_weather[start_indx+2].icon, 40, 113, 1);
     tft.setFreeFont(CF_OSR15);
     tft.drawLine(0, 184, 320, 184, TFT_GREEN);
 
     tft.drawString(getFutureTime((start_indx+3)*24, 4)+":", 2, 190);
     tft.setFreeFont(CF_OSR14);
-    printIcon(daily_weather[start_indx+3].icon, 40, 168, 1);
     printIcon("rain_small", 105, 191, 1);
     tft.drawString((String)daily_weather[start_indx+3].pop + "%", 120, 193);
-    printIcon("wind_small", 164, 191, 1);
-    tft.drawString(String(daily_weather[start_indx+3].wind_speed, 1) + "m/s", 183, 193);
-    tft.setFreeFont(CF_OSR15);
-    tft.drawString(String(daily_weather[start_indx+3].temp,0) + " / " + String(daily_weather[start_indx+3].min_temp,0) + "F", 249, 193);
+    printIcon("wind_small", 162, 191, 1);
+    tft.drawString(String(daily_weather[start_indx+3].wind_speed, 0) + "m/s", 181, 193);
+    tft.setFreeFont(CF_OSR17);
+    tft.drawString(String(daily_weather[start_indx+3].temp,0) + "|" + String(daily_weather[start_indx+3].min_temp,0) + "F", 234, 193);
     tft.setFreeFont(CF_OSR12);
-    print_handler(1, daily_weather[start_indx+3].summary, 2 ,226);
+    if(printHandler(1, daily_weather[start_indx+3].summary, 2 ,226) == 2){
+      printIcon(daily_weather[start_indx+3].icon, 44, 175, 2);
+    }
+    else printIcon(daily_weather[start_indx+3].icon, 40, 168, 1);
     tft.setFreeFont(CF_OSR15);
   } 
-  else if (button_state == 3 && !did_display) {
-    did_display = true;
-    tft.fillScreen(TFT_BLACK); //nothing for now
+  else if (button_state == 3 && !did_display) { //cycles to next screen of whatever is currently displayed
+    prev_millis_disp = cur_millis;
+    disp_state = (disp_state + 1) % num_disp_states;
+    button_state = prev_button_state;
   }
 
   if (cur_millis - prev_millis_disp >= del_interval) {
     prev_millis_disp = cur_millis;
-    //if (button_state == 2 || button_state == 3) disp_state = (disp_state + 1) % num_disp_states;
     disp_state = (disp_state + 1) % num_disp_states;
     did_display = false;
   }
