@@ -9,6 +9,10 @@ Currently you have to enter the network id/passwork into the code directly (no p
 Currently using ESP-WROOM-32 microcontroller and 320x240 2.4in tft screen w. ILI9341 driver and SPI interface
 Powered by 4AA batteries with voltage regulated to 3.3V (LD1117V33 volt. regulator)
 
+Used the following tools to create custom fonts and dispay custom images:
+https://oleddisplay.squix.ch/
+https://notisrac.github.io/FileToCArray/
+
 Maybe will 3d print a case for it. If I do I will upload the files here.
 
 ![cur2](https://github.com/user-attachments/assets/0a252234-d12d-4360-9ccf-a883e92422a2)
