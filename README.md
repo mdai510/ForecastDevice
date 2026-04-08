@@ -1,4 +1,5 @@
 Weather Forecast Device Uses WiFi connection to find your approx. location, then calls OpenWeatherMap API with that location
+(Uses 24 hour format :/ sorry lol)
 
 Options to display either current + 24 hour forecast, or 7 day forecast.
 Choice made using 2 buttons.
