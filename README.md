@@ -7,10 +7,20 @@ Third button cycles to the next screen in whatever forecast you are currently on
 Currently you have to enter the network id/passwork into the code directly (no plans to change this, since device is for home)
 
 Currently using ESP-WROOM-32 microcontroller and 320x240 2.4in tft screen w. ILI9341 driver and SPI interface
+Powered by 4AA batteries with voltage regulated to 3.3V (LD1117V33 volt. regulator)
 
+Used the following tools to create custom fonts and dispay custom images:
+https://oleddisplay.squix.ch/
+https://notisrac.github.io/FileToCArray/
+
+Maybe will 3d print a case for it. If I do I will upload the files here.
+
+Soldered onto perfboard
+![soldered](https://github.com/user-attachments/assets/4ad0152f-447b-46db-9c68-5856c5a462f9)
 ![cur2](https://github.com/user-attachments/assets/0a252234-d12d-4360-9ccf-a883e92422a2)
 ![daily1](https://github.com/user-attachments/assets/dc8d60c5-e4a4-4086-b2ac-238b9a10d333)
 ![daily2](https://github.com/user-attachments/assets/07565b70-46f4-4286-bdf1-4fde93d6b34a)
+
 
 
 
