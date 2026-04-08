@@ -117,13 +117,18 @@ bool any_pressed;
 TFT_eSPI tft = TFT_eSPI();
 
 //network information
-const char* ssid = "NETGEAR75";
-const char* password = "vastviolin434";
-IPAddress ipv6;
+//const char* ssid = "My iPhone"; 
+//const char* ssid = "Dookie Wifi";
+const char* ssid = "Linksys04225";
+//const char* password = "7.62x54r"; 
+//const char* password = "1234skin";
+const char* password = "abcdefgh";
+//IPAddress ipv6;
 
 //IP API
-String ip_API_call = "http://ip-api.com/json/";
-String ip_API_fields = "?fields=country,countryCode,regionName,city,lat,lon";
+//String ip_API_call = "http://ip-api.com/json/";
+//String ip_API_fields = "?fields=country,countryCode,regionName,city,lat,lon";
+String ip_API_call = "http://ip-api.com/json/?fields=country,countryCode,regionName,city,lat,lon";
 //Location information from IP API
 const char* country;
 const char* ccode;
@@ -179,6 +184,7 @@ bool did_display = false;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Gets location information from IPv6 Address
+/*
 String ipLocation() {
   ipv6 = WiFi.globalIPv6();
   Serial.print("WiFi IPv6 Address: ");
@@ -202,6 +208,28 @@ String ipLocation() {
     return "";
   }
   http.end();
+}*/
+String ipLocation() {
+  // Removed all IPv6 logic. ip-api will use the device's public IP automatically.
+  Serial.print("Calling API: ");
+  Serial.println(ip_API_call);
+
+  HTTPClient http;
+  http.begin(ip_API_call);
+  int httpCode = http.GET();
+
+  if (httpCode > 0) {
+    String payload = http.getString();
+    Serial.print("Returned Payload: ");
+    Serial.println(payload);
+    http.end();
+    return payload;
+  } else {
+    Serial.print("Error on HTTP Request. HTTP code: ");
+    Serial.println(httpCode);
+    http.end();
+    return "";
+  }
 }
 
 //Parses json information from IP API
@@ -309,7 +337,7 @@ void wifiConnect() {
   WiFi.begin(ssid, password);
   Serial.println("Connecting to WiFi...");
   while (WiFi.status() != WL_CONNECTED) {}
-  WiFi.enableIPv6();
+  //WiFi.enableIPv6();
   Serial.println("Connected to WiFi.");
 }
 
@@ -541,10 +569,11 @@ void setup() {
   wifiConnect();
 
   //get delay until IPv6 is valid (it takes some time)
+  /*
   tft.fillScreen(TFT_BLACK);  // Clear screen
   tft.drawString("Obtaining IPv6...", 0, 30, GFXFF);
   Serial.println("Obtaining IPv6...");
-  while (WiFi.globalIPv6().toString() == "::") {}
+  while (WiFi.globalIPv6().toString() == "::") {} */
 
   tft.fillScreen(TFT_BLACK);
   tft.drawString("Getting Location...", 0, 30, GFXFF);
